@@ -5,6 +5,7 @@ Florence语音合成器 - 使用TTSFactory提供统一的TTS接口
 import numpy as np
 from typing import List
 from FlorenceEngine.Objects.data_models import Song, Word
+from FlorenceEngine.Objects.context import Context
 
 # 动态导入模块，避免循环导入
 def import_tts_factory():
@@ -17,9 +18,8 @@ def import_tts_factory():
 
 
 class FlorenceSpeakGenerateor:
+    context:Context
     """输入一个song对象，对里面的word对象处理，根据lrc合成oriWave"""
-    #写死的采样率
-    OUTPUT_SAMPLE_RATE = 44100  # Hz
 
     def __init__(self, engine_type: str = ""):
         """
@@ -29,6 +29,8 @@ class FlorenceSpeakGenerateor:
             engine_type: 指定TTS引擎类型('espeak', 'windows', None表示自动选择最佳)
         """
         print("初始化Florence TTS引擎...")
+
+        #接受上下文
 
         # 创建TTS工厂
         TSFactory = import_tts_factory()

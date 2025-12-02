@@ -17,6 +17,7 @@ class Word:
     time: Time          # 时间结构体
     lrc: str            # 歌词拼音，若musicXML输入的为中文则转成拼音，忽略声调
     oriWave: Optional[np.ndarray] = None  # FlorenceSpeakGenerateor合成的原始tts二进制数据
+    pitchedWave: Optional[np.ndarray] = None #音高调整后的二进制数据
 
 
 @dataclass

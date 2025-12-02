@@ -8,6 +8,7 @@ from FlorenceEngine.FlorenceCoder.FlorenceCoder import FlorenceCoder
 from FlorenceEngine.FlorenceWaveConnecter.FlorenceWaveConnecter import FlorenceWaveConnecter
 from FlorenceEngine.FlorenceOutputGenerater.FlorenceOutputGenerater import FlorenceOutputGenerater
 from FlorenceEngine.Objects.Selector import selectScoreFile
+from FlorenceEngine.Objects.context import Context
 
 
 class FlorenceEngine:
@@ -20,7 +21,8 @@ class FlorenceEngine:
     def __init__(self,
                  output_dir: str = "output",
                  input_dir: str = "input",
-                 sample_rate: int = 22050):
+                 sample_rate: int = 22050,
+                 is_debug = True):
         """
         初始化Florence引擎
 
@@ -32,17 +34,23 @@ class FlorenceEngine:
         self.output_dir = output_dir
         self.input_dir = input_dir
         self.sample_rate = sample_rate
+        self.isDebug = is_debug
+
+        context = Context(
+            sample_rate=self.sample_rate,
+            isDebug= self.isDebug
+        )
 
         # 初始化各个模块
         print("正在初始化Florence歌声合成引擎...")
-        self.decoder = FlorenceScoreDecoder()
-        self.speech_generator = FlorenceSpeakGenerateor()
-        self.coder = FlorenceCoder(sample_rate=sample_rate)
-        self.wave_connector = FlorenceWaveConnecter(sample_rate=sample_rate)
-        self.output_generator = FlorenceOutputGenerater(
-            output_dir=output_dir,
-            sample_rate=sample_rate
-        )
+        self.decoder = FlorenceScoreDecoder(context)
+        # self.speech_generator = FlorenceSpeakGenerateor(context)
+        # self.coder = FlorenceCoder(context)
+        # self.wave_connector = FlorenceWaveConnecter(context)
+        # self.output_generator = FlorenceOutputGenerater(
+        #     output_dir=output_dir,
+        #     sample_rate=sample_rate
+        # )
 
     def select_and_process(self) -> Optional[str]:
         """
@@ -51,20 +59,18 @@ class FlorenceEngine:
         Returns:
             生成的WAV文件路径，如果处理失败则返回None
         """
-        try:
-            # 使用文件选择器选择MusicXML文件
+        # 使用文件选择器选择MusicXML文件
+        if self.isDebug:
+            score_file = ".//input//雪绒花.musicxml"
+        else:
             score_file = selectScoreFile(self.get_engine_info()['input_directory'])
-            if not score_file:
-                print("用户取消文件选择")
-                return None
-
-            print(f"已选择文件：{score_file}")
-            return self.process_score(score_file)
-
-        except Exception as e:
-            print(f"文件选择和处理过程中出错：{e}")
-            traceback.print_exc()
+        
+        if not score_file:
+            print("用户取消文件选择")
             return None
+
+        print(f"已选择文件：{score_file}")
+        return self.process_score(score_file)
 
     def process_score(self, score_path: str) -> Optional[str]:
         """
@@ -112,17 +118,11 @@ class FlorenceEngine:
 
     def _decode_score(self, score_path: str):
         """阶段1：乐谱解析"""
-        try:
-            return self.decoder.decode_score(score_path)
-        except Exception as e:
-            raise Exception(f"乐谱解析失败：{e}")
+        return self.decoder.decode_score(score_path)
 
     def _generate_speech(self, song):
         """阶段2：基础语音合成"""
-        try:
-            return self.speech_generator.generate_song_speech(song)
-        except Exception as e:
-            raise Exception(f"语音合成失败：{e}")
+        return self.speech_generator.generate_song_speech(song)
 
     def _adjust_pitch(self, song):
         """阶段3：音高校正"""
@@ -145,6 +145,7 @@ class FlorenceEngine:
         except Exception as e:
             raise Exception(f"输出装配失败：{e}")
 
+
     def get_engine_info(self) -> dict:
         """获取引擎信息"""
         return {
@@ -158,5 +159,6 @@ class FlorenceEngine:
             },
             "sample_rate": self.sample_rate,
             "output_directory": self.output_dir,
-            "input_directory": self.input_dir
+            "input_directory": self.input_dir,
+            "isDebug":self.isDebug
         }

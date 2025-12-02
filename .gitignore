@@ -218,3 +218,6 @@ __marimo__/
 # 定制
 test.py
 *.wav
+Source.gv.pdf
+Source.gv
+playground/
