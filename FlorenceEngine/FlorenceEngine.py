@@ -45,9 +45,9 @@ class FlorenceEngine:
         print("正在初始化Florence歌声合成引擎...")
         self.decoder = FlorenceScoreDecoder(context)
         self.speech_generator = FlorenceSpeakGenerateor(context)
-        # self.coder = FlorenceCoder(context)
-        # self.wave_connector = FlorenceWaveConnecter(context)
-        # self.output_generator = FlorenceOutputGenerater(
+        self.coder = FlorenceCoder(context)
+        self.wave_connector = FlorenceWaveConnecter(context)
+        #self.output_generator = FlorenceOutputGenerater(
         #     output_dir=output_dir,
         #     sample_rate=sample_rate
         # )
