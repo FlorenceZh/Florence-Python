@@ -8,7 +8,7 @@ import sounddevice as sd
 import warnings
 
 class AudioDebugger:
-    def __init__(self, sample_rate=44100):
+    def __init__(self, sample_rate=22050):
         """
         初始化音频调试器
 
@@ -100,6 +100,56 @@ class AudioDebugger:
             sd.stop()
             self.is_playing = False
             print("播放已停止")
+
+    def save(self, audio_data, filename="temp.wav", normalize=True):
+        """
+        保存音频数据到WAV文件
+        
+        Args:
+            audio_data: numpy数组
+            filename: 文件名或路径
+            normalize: 是否归一化到最大音量
+        """
+        try:
+            import scipy.io.wavfile
+            import os
+
+            # 确保数据是numpy数组
+            if not isinstance(audio_data, np.ndarray):
+                print("错误：输入必须是numpy数组")
+                return False
+
+            # 转换为float32进行处理
+            audio_copy = audio_data.astype(np.float32)
+
+            # 归一化
+            if normalize:
+                max_val = np.max(np.abs(audio_copy))
+                if max_val > 0:
+                    audio_copy = audio_copy / max_val
+            
+            # 确保范围在 [-1, 1]
+            audio_copy = np.clip(audio_copy, -1.0, 1.0)
+
+            # 转换为 16-bit PCM (标准wav格式，兼容性最好)
+            # 将 float[-1,1] 映射到 int16[-32767, 32767]
+            audio_int16 = (audio_copy * 32767).astype(np.int16)
+
+            # 获取绝对路径以便在控制台显示
+            full_path = os.path.abspath(filename)
+
+            # 写入文件
+            scipy.io.wavfile.write(full_path, self.sample_rate, audio_int16)
+            
+            print(f"音频已保存至: {full_path}")
+            return True
+
+        except ImportError:
+            print("保存失败：需要 scipy 库 (请运行 pip install scipy)")
+            return False
+        except Exception as e:
+            print(f"保存文件时出错: {e}")
+            return False
 
     def get_audio_info(self, audio_data):
         """
@@ -208,6 +258,17 @@ def test_play():
     play_stereo(left, right, volume=0.7)
 
     print("测试完成！")
+
+def save(audio_data, filename="temp.wav", normalize=True):
+    """
+    保存音频数据到WAV文件 (调试用)
+    
+    Args:
+        audio_data: numpy数组
+        filename: 保存路径，默认为 temp.wav
+        normalize: 是否自动归一化
+    """
+    return debugger.save(audio_data, filename, normalize)
 
 
 if __name__ == "__main__":
